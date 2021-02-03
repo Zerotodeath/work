@@ -1,0 +1,45 @@
+(function($){
+	$(function() {
+		const $testCheckForm = $('.yct-check-test-result-form-wrap #yct-check-test-result-form');
+		const $testCheckSubmitButton = $testCheckForm.find('.yct-test-code-check');
+
+		const checkTestResult = function() {
+			const formData = $testCheckForm.serializeArray();
+			const $this = $(this);
+
+			$testCheckForm.find('.ytc-error').remove();
+			if($('#yct-test-code').val().length == 0) {
+				$testCheckForm.prepend(`<div class="ytc-error">Your code is missing</div>`);
+				return;
+			}
+
+			$.ajax({
+                url: testResultForm.ajaxUrl,
+                method: 'POST',
+				data: formData,
+				beforeSend: function() {
+					$this.attr('disabled', true);
+					$this.text('Processing...');
+				},
+                success: function(response) {
+                    if(response.success) {
+						$this.text('Success');
+						window.location = response.data;
+						return;
+					}
+
+					$testCheckForm.prepend(`<div class="ytc-error">${response.data}</div>`);
+					$this.text('Submit');
+					$this.attr('disabled', false);
+				},
+				error: function(xhr, status, error) {
+					$testCheckForm.prepend(`<div class="ytc-error">${xhr.responseJSON.data}</div>`);
+					$this.text('Submit');
+                    $this.attr('disabled', false);
+                }
+            })
+		}
+
+		$testCheckSubmitButton.on('click', checkTestResult);
+	})
+})(jQuery)
